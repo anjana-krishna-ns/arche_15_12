@@ -1,0 +1,400 @@
+Counter Example
+
+
+import 'package:flutter/material.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({Key? key}) : super(key: key);
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadCounter();
+  }
+
+// Loading counter value on start
+
+  void _loadCounter() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      _counter = (prefs.getInt('counter') ?? 0);
+    });
+  }
+
+// Incrementing counter after click
+
+  void _incrementCounter() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      _counter = (prefs.getInt('counter') ?? 0) + 1;
+
+      prefs.setInt('counter', _counter);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Shared Preferences")),
+
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'You have pushed the button this many times:',
+            ),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headline4,
+            ),
+          ],
+        ),
+      ),
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes
+
+// auto-formatting nicer for build methods.
+    );
+  }
+}
+
+***************************************************************************************************************************************************
+
+Login Examples
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'home_form.dart';
+
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() =>  _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  TextEditingController username =  TextEditingController();
+  TextEditingController password =  TextEditingController();
+
+  bool checkValue = false;
+
+  SharedPreferences? sharedPreferences;
+
+  @override
+  void initState() {
+    super.initState();
+    getCredential();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return  Scaffold(
+      appBar:  AppBar(
+        elevation: 0.0,
+        backgroundColor: Colors.white12,
+      ),
+      body:  SingleChildScrollView(
+        child: _body(),
+        scrollDirection: Axis.vertical,
+      ),
+    );
+  }
+
+  Widget _body() {
+    return  Container(
+      padding: EdgeInsets.only(right: 20.0, left: 20.0),
+      child:  Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: <Widget>[
+
+           TextField(
+            controller: username,
+            decoration: InputDecoration(
+                hintText: "username",
+                hintStyle:  TextStyle(color: Colors.grey.withOpacity(0.3))),
+          ),
+           TextField(
+              controller: password,
+              obscureText: true,
+              decoration: InputDecoration(
+                  hintText: "password",
+                  hintStyle:
+                   TextStyle(color: Colors.grey.withOpacity(0.3)))),
+           CheckboxListTile(
+            value: checkValue,
+            title:  Text("Remember me"),
+            controlAffinity: ListTileControlAffinity.leading,
+             onChanged: (bool? value) {
+
+              setState(() {
+                checkValue=!checkValue;
+              });
+           },
+          ),
+           Container(
+            decoration:
+             BoxDecoration(border: Border.all(color: Colors.black)),
+            child:  ListTile(
+              title:  Text(
+                "Login",
+                textAlign: TextAlign.center,
+              ),
+              onTap: _navigator,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  _onChanged(bool value) async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      checkValue = value;
+      sharedPreferences?.setBool("check", checkValue);
+      sharedPreferences?.setString("username", username.text);
+      sharedPreferences?.setString("password", password.text);
+      getCredential();
+    });
+  }
+
+  getCredential() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      checkValue = sharedPreferences!.getBool("check")!;
+      if (checkValue != null) {
+        if (checkValue) {
+          username.text = sharedPreferences!.getString("username")!;
+          password.text = sharedPreferences!.getString("password")!;
+        } else {
+          username.clear();
+          password.clear();
+          sharedPreferences!.clear();
+        }
+      } else {
+        checkValue = false;
+      }
+    });
+  }
+
+  _navigator() {
+    if (username.text.length != 0 || password.text.length != 0) {
+      Navigator.of(context).pushAndRemoveUntil(
+           MaterialPageRoute(
+              builder: (BuildContext context) =>  HomeScreen()),
+              (Route<dynamic> route) => false);
+    } else {
+
+    }
+  }
+}
+
+
+import 'package:flutter/material.dart';
+
+import 'login_form.dart';
+
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar:  AppBar(
+        title:  Text("Home"),
+        actions: <Widget>[
+           IconButton(
+              icon:  Icon(Icons.exit_to_app),
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                     MaterialPageRoute(
+                        builder: (BuildContext context) =>  LoginPage()),
+                        (Route<dynamic> route) => false);
+              })
+        ],
+      ),
+      body:  Container(
+        alignment: Alignment.center,
+        child:  Text(
+          "Welcome to flutter.!",
+          style:  TextStyle(fontSize: 26.0, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+}
+***************************************************************************************************************************************************
+Login Example 2
+
+
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'dashboard.dart';
+class MyLoginPage extends StatefulWidget {
+  @override
+  _MyLoginPageState createState() => _MyLoginPageState();
+}
+class _MyLoginPageState extends State<MyLoginPage> {
+  // Create a text controller and use it to retrieve the current value
+  // of the TextField.
+  final username_controller = TextEditingController();
+  final password_controller = TextEditingController();
+  late SharedPreferences logindata;
+  late bool newuser;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    check_if_already_login();
+  }
+  void check_if_already_login() async {
+    logindata = await SharedPreferences.getInstance();
+    newuser = (logindata.getBool('login') ?? true);
+    print(newuser);
+    if (newuser == false) {
+      Navigator.pushReplacement(
+          context, new MaterialPageRoute(builder: (context) => MyDashboard()));
+    }
+  }
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    username_controller.dispose();
+    password_controller.dispose();
+    super.dispose();
+  }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(" Shared Preferences"),
+      ),
+      body: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              "Login Form",
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: TextField(
+                controller: username_controller,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'username',
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: TextField(
+                controller: password_controller,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Password',
+                ),
+              ),
+            ),
+            ElevatedButton(
+
+              onPressed: () {
+                String username = username_controller.text;
+                String password = password_controller.text;
+                if (username != '' && password != '') {
+                  print('Successfull');
+                  logindata.setBool('login', false);
+                  logindata.setString('username', username);
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => MyDashboard()));
+                }
+              },
+              child: Text("Log-In"),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'login_form2.dart';
+class MyDashboard extends StatefulWidget {
+  @override
+  _MyDashboardState createState() => _MyDashboardState();
+}
+class _MyDashboardState extends State<MyDashboard> {
+  late SharedPreferences logindata;
+  late String username;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    initial();
+  }
+  void initial() async {
+    logindata = await SharedPreferences.getInstance();
+    setState(() {
+      username = logindata.getString('username')!;
+    });
+  }
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Shared Preference Example"),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(26.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Center(
+                child: Text(
+                  'Welcome  $username',
+                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  logindata.setBool('login', true);
+                  Navigator.pushReplacement(context,
+                       MaterialPageRoute(builder: (context) => MyLoginPage()));
+                },
+                child: Text('LogOut'),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
